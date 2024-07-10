@@ -1,0 +1,324 @@
+---
+title: "Tutorial 4"
+author: "Thy Nguyen - MinhPham"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+```{r message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+```
+
+# Question 1
+- In a VAR(1) model, the **lag 1** values for all variables are added to the right sides of the equations. In this case, yt and xt are the dependent variables, and their values at time t are determined by yt-1, xt-1 and the corresponding coefficients $\theta_{11}$, $\theta_{12}$, $\theta_{21}$, $\theta_{22}$. The error terms $\epsilon_{1,t}$,t and $\epsilon_{2,t}$ are the unexplained components of the equations.
+
+- In ADL model, the dependent variable is regressed on its own lagged values as well as the lagged values of the independent variables.
+
+In the VAR(1), we have:
+
+\[
+\begin{bmatrix}
+\theta_{11} & \theta_{12} \\
+\theta_{21} & \theta_{22} \\
+\end{bmatrix}
+\begin{bmatrix}
+y_{t-1} \\
+x_{t-1} \\
+\end{bmatrix}
+=
+\begin{bmatrix}
+\theta_{11} \cdot y_{t-1} + \theta_{12} \cdot x_{t-1} \\
+\theta_{21} \cdot y_{t-1} + \theta_{22} \cdot x_{t-1} \\
+\end{bmatrix}
+\]
+
+Therefore, 
+
+\[
+\begin{bmatrix}
+y_t \\
+x_t
+\end{bmatrix}
+=
+\begin{bmatrix}
+\delta_1 \\
+\delta_2
+\end{bmatrix}
++
+\begin{bmatrix}
+\theta_{11} & \theta_{12} \\
+\theta_{21} & \theta_{22}
+\end{bmatrix}
+\begin{bmatrix}
+y_{t-1} \\
+x_{t-1}
+\end{bmatrix}
++
+\begin{bmatrix}
+\epsilon_{1,t} \\
+\epsilon_{2,t}
+\end{bmatrix}\\
+=
+\begin{bmatrix}
+\delta_1 \\
+\delta_2 \\
+\end{bmatrix}
++
+\begin{bmatrix}
+\theta_{11} \cdot y_{t-1} + \theta_{12} \cdot x_{t-1} \\
+\theta_{21} \cdot y_{t-1} + \theta_{22} \cdot x_{t-1} \\
+\end{bmatrix}
++
+\begin{bmatrix}
+\varepsilon_{1,t} \\
+\varepsilon_{2,t} \\
+\end{bmatrix}
+\]
+
+Adding 2 matrix by element wise, we have ADL model for series $x_t$ and $y_t$:
+
+$$
+y_t = \delta_1 + \theta_{11}y_{t-1} + \theta_{12}x_{t-1} + \epsilon_{1,t} 
+$$
+
+$$
+x_t = \delta_2 + \theta_{21}y_{t-1} + \theta_{22}x_{t-1} + \epsilon_{2,t}
+$$
+In the VAR(1) model, the covariance between the errors of different equations is $\sigma_{1,2}$. However, when we transform the VAR(1) into ADL models, each equation is considered separately. Hence, correlation assumptions in the error terms are:
+
+- The errors $\varepsilon_{1,t}$ and $\varepsilon_{2,t}$ are not correlated. It means that the correlation between $\varepsilon_{1,t}$ and $\varepsilon_{2,t}$ is zero. Therefore, the covariance between $\varepsilon_{1,t}$ and $\varepsilon_{2,t}$ is $\sigma_{1,2}$ 0.
+$$
+\text{Cov}(\epsilon_{1,t}, \epsilon_{2,t}) = \text{Cov}(\epsilon_{2,t}, \epsilon_{1,t}) = \sigma_{1,2} =0
+$$
+- Each error in ADL $\varepsilon_{1,t}$ and $\varepsilon_{2,t}$ follows a normal distribution with zero mean and variances ($\sigma^2_1$ and $\sigma^2_2$, respectively.
+
+# Question 2
+
+Applying a Vector Autoregression (VAR) model instead of two separate Autoregressive Distributed Lag (ADL) models for series $x_t$ and $y_t$ offers several advantages:
+
+1.   **Simultaneous modeling:** VAR models allow us to model multiple time series variables simultaneously. This means we can capture the dynamic interdependencies and feedback effects between $x_t$ and $y_t$ in a single framework. With separate ADL models, we would need to estimate the parameters separately, potentially overlooking the interdependencies between the two series.
+
+2.  **Efficiency:** Estimating a VAR model involves estimating fewer parameters compared to estimating two separate ADL models. This can lead to more efficient parameter estimates, especially when the variables are correlated.
+
+3.  **Exploiting dependence:** If two (or more) time series are interdependent, this interdependency can be exploited to improve estimation results and forecasts. The VAR model considers relationships between variables by incorporating interactions among them. It characterizes each variable as dependent on its own past values as well as past values of all other variables. For example, the model of question 1, $x_t$ affects future values of $y_t$ and vice versa, if we use ADL models, it would fail to capture this interaction.
+
+4.  **Modeling unobserved contemporaneous variables:** VAR models provide a more straightforward interpretation of the relationship between $x_t$ and $y_t$ by directly estimating the contemporaneous and lagged effects of each variable on the other. If variable $y_t$ depends on the value $x_t$ , while $x_t$ is not observed at time t. Instead, $x_t$ has to be modeled together with $y_t$ in order to estimate or forecast $y_t$. In contrast, interpreting the relationship between $x_t$ and $y_t$ from two separate ADL models might be more complex and less intuitive.
+
+# Question 3
+Yes, we need stationary assumptions for the series  $x_t$ and  $y_t$
+
+**Explain by equation**
+Considering the assumption 
+\[E(z_{t}) = \delta + \theta E(z_{t-1})]\]
+where \(\delta\) is a 2x1 vector for a 2-variable VAR. 
+
+Assuming \(\overline{z} = E(z_{t}) = E(z_{t-1})\) we have: 
+
+\((I_{2x2}-\theta)\overline{z} = \delta \Leftrightarrow (I_{2x2} - \theta)^{-1} (I_{2x2} - \theta)\overline{z} = (I_{2x2} - \theta)^{-1}\delta\), 
+
+hence \(\overline{z}=(I_{2x2}-\theta)^{-1}\delta)\)
+where \(I_{2x2} = \begin{pmatrix} 1 & 0  \\ 0 & 1 \end{pmatrix} \) is called the 'identity matrix'. 
+So, the stationary condition is that \((I_{2x2}-\theta))\) has to be an invertible matrix, which means that the eigenvalues of this matrix must be non-zero. 
+
+If we are looking for example at a model that has a random walk for both series in \(z_{t}\): 
+\[y_t = \delta_1 + y_{t-1} + 0 \times x_{t-1} + \varepsilon_{1,t}\]
+\[x_t = \delta_2 + 0 \times y_{t-1} + x_{t-1} + \varepsilon_{2,t}\]
+
+i.e. both yt and xt are nonstationary, hence the stationarity condition for the VAR(1) model does not hold. It is easy to see that the stationarity condition does not hold:
+
+\((I_{2 \times 2} - \Theta) = \begin{pmatrix} 1 & 0 \\ 0 & 1 \end{pmatrix} - \begin{pmatrix} 1 & 0 \\ 0 & 1 \end{pmatrix} = \begin{pmatrix} 0 & 0 \\ 0 & 0 \end{pmatrix}\)
+
+is not an invertible matrix as eigenvalues are 0. 
+
+Therefore, stationarity ensures that the mean, variance, and autocovariance of the time series $x_t$ and $y_t$ are constant over time, allowing for consistent estimation of parameters, correct interpretation of the coefficients, and accurate forecasting. For example, if the series are non-stationary, the mean and variance may change over time, leading to biased parameter estimates and unreliable inference. 
+
+Before applying the VAR model, it is important to ensure that the series $x_t$ and $y_t$ are stationary. This can be done using various statistical tests such as the Augmented Dickey-Fuller (ADF) test or the Kwiatkowski-Phillips-Schmidt-Shin (KPSS) test. If the series are found to be non-stationary, they can be transformed (e.g., differencing) to achieve stationarity before fitting the VAR model.
+
+# Question 4
+
+To extend the VAR model to allow for deterministic trends in the two variables $x_t$ and $y_t$, we can include a trend term in each equation.
+
+The extended VAR model with deterministic trends is:
+
+\[
+\begin{pmatrix} y_t \\ x_t \end{pmatrix}
+= 
+\begin{pmatrix} \delta_1 \\ \delta_2 \end{pmatrix}
++ 
+\begin{pmatrix} \gamma_1 t \\ \gamma_2 t \end{pmatrix}
++ 
+\begin{pmatrix} \theta_{11} & \theta_{12} \\ \theta_{21} & \theta_{22} \end{pmatrix}
+\begin{pmatrix} y_{t-1} \\ x_{t-1} \end{pmatrix}
++ 
+\begin{pmatrix} \epsilon_{1,t} \\ \epsilon_{2,t} \end{pmatrix}
+\]
+
+Comparing to the provided model VAR(1), the VAR(1) with deterministic trend includes \(\gamma_1\) and \(\gamma_2\), which are coefficients of the deterministic time trend, \(t\), in the \(y_t\) and \(x_t\) equations respectively; and \(t\) represents the observed time period.
+
+# Question 5
+
+Non-zero autocorrelation in residuals violates one of the assumptions of the VAR model, which is that the error terms are uncorrelated with itself and each other. If the ACF/PACF of residuals show significant values at certain lags, it suggests that the residuals are not random, but rather, they exhibit a pattern that can be predicted based on past values. Methods that can be used to solve:
+
+1. **Increase or decrease lag order of the VAR model**: For example, the VAR(1) model provided in question only account for the lag of 1 step backward. We could consider a higher order VAR model, like a VAR(2), VAR(3), and so on in order to account more backward lag into VAR model. This might help capture more complex temporal relationships in the data.
+
+2. **Differencing**: If changing lag structure of the VAR model does not work, we can make the time-series stationary by differencing. This method can remove trends or seasonality from a time series dataset. 
+
+# Question 6
+(a) **General to specific model selection using t-tests or F-tests:** This model selection method start with a relatively large model. Based on this large model, we then test the significance of the lagged terms using t-tests or F-test and the p-values of these tests. If the lagged terms are not significant, we can define and estimate smaller models step-by-step.
+
+(b) **Choosing the model with highest adjusted R-squared:**
+Using adjusted R-squared alone is not a helpful method to compare VAR(1) and VAR(2). The reason is that it only evaluates the goodness of fit without considering the model's complexity, such as the number of parameters. In time series analysis, overfitting can be the issues. A model with more number of parameters might have a higher adjusted R-squared only because it captures noise in the dataset, rather than being a better model.
+*Note*: R^2 also take into accout the number of parameter, but this creterio is not the best
+
+(c) **Choosing the model based on BIC or AIC:**
+These metrics can be used to compare various VAR models as well. Both the BIC (Bayesian Information Criterion) and AIC (Akaike Information Criterion) tests model fit while penalizing complexity of the models. Therefore, BIC and AIC balance the trade-off between the goodness of fit of the model and the complexity of the model. The lower values of BIC and AIC indicate the better model.
+
+(d) **Misspecification tests for the residuals:**
+Misspecification tests for residuals, such as the Portmanteau test (Ljung-Box test) for autocorrelation or tests for normality, can be used to evaluate VAR(1) and VAR(2) models. These tests can inform whether the models are correctly specified. If the residuals of a model are not white noise, it suggests that the model may be misspecified and may need to be refined. For example, by comparing the results of Ljung-Box tests between the VAR(1) and VAR(2) models, we can know if the residuals are autocorrelated. Based on these test we choose the model having residuals with better fit (lower/no autocorrelation).
+
+# Question 7
+
+The "curse of dimensionality" refers to the exponential increase in the number of parameters that need to be estimated as the number of variables in a model increases. In VAR models, each variable can be regressed on its own lagged values as well as the lagged values of all other variables in the system. The number of parameters depends on how many variables (denoted by $K$) and how many lags (denoted by $p$) should be included. The number of coefficients to be estimated in a VAR is equal to $K + pK^2$ (or $1 + pK$ per equation).
+
+$$
+\text{Number of parameters} = K + pK^2
+$$
+For 10 series ($K = 10$), the number of parameters to be estimated in unrestricted VAR(1) ($p = 1$) model with an intercept is:
+
+$$
+\text{Number of parameters} = K + pK^2 = 10 + 1*10^2 = 110
+$$
+As the number of variables increases, the number of parameters grows rapidly, leading to the curse of dimensionality. This can make estimation challenging and requires a large amount of data to obtain reliable parameter estimates. Additionally, as the number of parameters increases, the risk of overfitting also increases.
+
+*Note* should also have estimate of errors.
+
+# 8. Macroeconomic Parameters of Canada
+
+```{r setup, warning = FALSE, message = FALSE}
+library(vars)
+library(tseries)
+#load the data
+data("Canada")
+is.ts(Canada)
+```
+
+## (a)
+
+```{r exploration, warning = FALSE}
+# plot the data
+plot(Canada)
+
+# variables 
+U <- Canada[, "U"]
+e <- Canada[, "e"]
+prod <- Canada[, "prod"]
+rw <- Canada[, "rw"]
+
+# test stationary with adf test
+adf.test(U)
+adf.test(e)
+adf.test(prod)
+adf.test(rw)
+```
+
+Running adf.test on 4 time-series, extracted from Canada database, results in non-significant p-value for all 4 series: 0.3303 for Unemployment Rate (U), 0.218 for Production Index (prod) time-series, 0.5152 for Civil Employment Rate (e) time-series, and 0.553 for Real Wages (rw). So we cannot reject null hypothesis of non-stationary for all 4 series. All of them is non-stationary. Therefore, differencing on the time series is needed. 
+
+```{r}
+#difference the series
+prod_diff <- diff(prod)
+rw_diff <- diff(rw)
+u_diff <- diff(U)
+e_diff <- diff(e)
+
+#Rerun the adf.test on differenced time-series
+tseries::adf.test(u_diff)
+tseries::adf.test(prod_diff)
+tseries::adf.test(e_diff)
+tseries::adf.test(rw_diff)
+```
+
+After differencing, the 4 time-series have their p-value decrease a lot, but only the `u_diff` is stationary with the significant level = 0.05. The other three series are not significant. Therefore we try to run the second differencing and re-estimate.
+
+```{r}
+#difference the series
+prod_diff2 <- diff(prod_diff)
+rw_diff2 <- diff(rw_diff)
+e_diff2 <- diff(e_diff)
+u_diff2 <- diff(u_diff)
+
+#Rerun the adf.test on differenced time-series
+tseries::adf.test(prod_diff2)
+tseries::adf.test(e_diff2)
+tseries::adf.test(rw_diff2)
+tseries::adf.test(u_diff2)
+```
+After running the second differencing, all time series is stationary.
+
+## (b)
+
+```{r}
+#Estimate a VAR(1) model without trend or constant 
+canada_diff <- diff(Canada)
+canada_var1 <- VAR(canada_diff, type = 'none')
+summary(canada_var1[["varresult"]][["U"]])
+```
+
+For the VAR(1) model estimated for the unemployment rate ($U$), the coefficient estimates for the equation are as follows:
+
+$$ U_t =  -0.36 \times e_{t-1} - 0.12 \times \text{prod}_{t-1} + 0.11 \times \text{rw}_{t-1} - 0.001 \times U_{t-1} + 0.32 $$
+
+-   $e_{t-1}$ (Civil Employment Rate): The coefficient is approximately -0.36. This means that an increase in the civil employment rate ($e$) in the previous period leads to a decrease of approximately 0.36 units in the unemployment rate ($U$) in the current period, all else being equal. P-value of $e_{t-1}$ is also significant at 0.0002691 .
+-   $\text{prod}_{t-1}$ (Production Index): The coefficient is approximately -0.12. This means that a one-unit increase in the production index ($\text{prod}$) in the previous period leads to a decrease of approximately 0.12 units in the unemployment rate ($U$) in the current period, all else being equal. P-value of $\text{prod}_{t-1}$ is also significant at 0.0200082
+-   $\text{rw}_{t-1}$ (Real Wages): The coefficient is approximately 0.11. This means that a one-unit increase in real wages ($\text{rw}$) in the previous period leads to an increase of approximately 0.11 units in the unemployment rate ($U$) in the current period, all else being equal. Also, p-value of $\text{rw}_{t-1}$ is significant, at 0.0013819
+-   $U_{t-1}$ (Unemployment Rate Lagged): The coefficient is approximately 0.001336, very low. However, the p-value of lagged $U_{t-1}$ is also not significant at 0.9930289. This mean that previous unemployment rate leave no persitant in current period.
+
+## (c)
+
+```{r}
+#Estimate a VAR(1) model with constant 
+canada_var1_const <- VAR(canada_diff, type = 'const')
+#Estimate a VAR(1) model with both constant and trend
+canada_var1_both <- VAR(canada_diff, type = 'both')
+```
+
+```{r}
+as.data.frame(matrix(c("Adj. R^2 of VAR",
+                       "Adj. R^2 of 'const' VAR",
+                       "Adj. R^2 of 'both' VAR",
+                       summary(canada_var1[["varresult"]][["U"]])$adj.r.squared,
+summary(canada_var1_const[["varresult"]][["U"]])$adj.r.squared,
+summary(canada_var1_both[["varresult"]][["U"]])$adj.r.squared),
+byrow = TRUE, nrow = 2))
+```
+
+From the $R^2$ of 3 VAR model (which measure of how well the independent variables explain the variation in the dependent variable(s), especially when comparing models with different numbers of predictors. and penalizes the addition of unnecessary predictors to the model), we can see that VAR(1) model with const included have the highest $Adj.$ $R^2$ at 0.4855, while including trend in VAR(1) slightly decrease $Adj.$ $R^2$ to 0.48. This means that including constant improve the fit of VAR model, but including trend is unnecessary.
+
+## (d)
+
+```{r}
+# Perform Granger causality test
+granger_test <- causality(canada_var1, cause = "rw")
+
+# Print the results
+print(granger_test)
+
+# Print p-value
+granger_test[["Granger"]][["p.value"]]
+```
+
+Running Granger causality test on canada_var1, cause is rw results in a significant value of 0.0009215. This means that we can reject null hypothesis of rw do not Granger-cause e prod U and say that rw (real wages) have inter-impact with other economic index: unemployment, civil employment and product index.
+
+## (e)
+
+```{r}
+# Estimate impulse response function
+irf <- irf(canada_var1, impulse = "rw", response = c("U", "prod", "e"))
+
+# Plot impulse response function
+plot(irf, main = "Impulse Response Function to a One-Unit Change in Real Wages (rw)")
+```
+
+From the plot of impulse response function, we can see that real wages (rw) shock have a slow impact on civil employment rate (e), with the after-effect of the shock slowly increase to peak at lag 3, then slowly decrease and converge back to 0 by lag 10
+
+On Produce index (prod), real wages impulse barely have impact on prod as the shock only effect at lag 1 and quickly converge back to zero.
+
+On unemployment (U), rw impulse create a big shock on U at lag 1, but the shock quickly decrease and converge back to zero after lag 6.
