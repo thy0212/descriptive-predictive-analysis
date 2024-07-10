@@ -1,0 +1,598 @@
+---
+title: "Tutorial 3"
+author: "Thy Nguyen (i6209084) - MinhPham (i6361108)"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+setwd("/Users/atnguyen/Downloads/5.DPA/tutorial 3")
+library(tseries)
+library(devtools)
+library(TSA)
+library(lmtest)
+library(aTSA)
+```
+
+## (a)
+
+Mean of the one-step ahead forecast of $y_t$ will be conditional expectation of $y_{t+1}$:
+
+```{=tex}
+\begin{align*}
+E(y_{t+1}\mid y_{1:t}) &= E(\beta_0 + \beta_1 y_{t} + \epsilon_{t+1} \mid y_{1:t} ) \\
+&= \beta_0 + E(\beta_1 y_{t}\mid y_{1:t} )  \\
+&= \beta_0 + \beta_1 y_t
+\end{align*}
+```
+Because $y_t$ is a stationary time-series, expectation of all $y$ in the series is equal to $y_t =\mu$.
+
+variance of the one-step ahead forecast of $y_t$:
+
+```{=tex}
+\begin{align*}
+Var(y_{t+1}\mid y_{1:t}) &= E[(y_{t+1}\mid  y_{1:t} - E(y_{t+1}\mid  y_{1:t}))^2 \\
+&= E[(\beta_0 + \beta_1 y_{t} + \epsilon_{t+1} - (\beta_0 + \beta_1 y_t))^2] \\
+&= E[(\epsilon_{t+1})^2] \\
+&= \sigma^2
+\end{align*}
+```
+## (b)
+
+Mean of the two-step ahead forecast of $y_t$ will be conditional expectation of $y_{t+2}$:
+
+```{=tex}
+\begin{align*}
+E(y_{t+2}\mid y_{1:t}) &= E(\beta_0 + \beta_1 y_{t+1} + \epsilon_{t+2} \mid y_{1:t} ) \\
+&= \beta_0 + \beta_1 E(y_{t+1}\mid y_{1:t} ) \\
+&= \beta_0 +\beta_1(\beta_0 + \beta_1 y_t) \\
+\end{align*}
+```
+Because $y_t$ is a stationary time-series, expectation of all $y$ in the series is equal to $y_t =\mu$.
+
+Variance of the two-step ahead forecast of $y_t$:
+
+```{=tex}
+\begin{align*}
+Var(y_{t+2} | y_{1:t}) & = Var(\beta_0 + \beta_1 y_{t+1}|y_{1:t} + \epsilon_{t+2}|y_{1:t}) \\
+& = 0 + Var(\beta_1 y_{t+1}|y_{1:t}) + Var(\epsilon_{t+2}) \\
+& = 0 + \beta^2_1 Var(\epsilon_{t+1}) + \sigma^2 \\
+& = \beta^2_1 \sigma^2 + \sigma^2 \\
+& = (1 +\beta^2_1 )\sigma^2
+\end{align*}
+```
+## (c)
+
+To incorporate a breakpoint at time $t = 100$ into the AR(1) model, we can use a dummy variable $D_t$ which takes the value 0 for observations before the breakpoint ($t < 100$) and the value 1 for observations after the breakpoint ($t \geq 100$).
+
+The AR(1) model with a dummy variable can be written as follows:
+
+$$ y_t = \beta_0 + \beta_1 y_{t-1} + \beta_2 D_t + \varepsilon_t $$
+
+Where:
+
+\- $y_t$ is the observed value at time $t$.
+
+\- $\beta_0$ is the intercept term.
+
+\- $\beta_1$ is the coefficient of the lagged dependent variable.
+
+\- $\beta_2$ is the coefficient of the dummy variable.
+
+\- $D_t$ is the dummy variable which takes the value 0 for $t < 100$ and 1 for $t \geq 100$. 
+\- $\varepsilon_t$ is the error term assumed to be a white noise series with mean 0 and variance $\sigma^2$.
+
+## (d)
+
+To calculate the mean and variance of the one-period ahead forecast for the AR(1) model with a breakpoint at time $t = 100$, we need to consider two cases: before the breakpoint ($t < 100$) and after the breakpoint ($t \geq 100$).
+
+Given the AR(1) model with a dummy variable:
+
+$$ y_t = \beta_0 + \beta_1 y_{t-1} + \beta_2 D_t + \varepsilon_t $$
+
+where $D_t$ is the dummy variable which takes the value 0 for $t < 100$ and 1 for $t \geq 100$, we can express the one-period ahead forecast as follows:
+
+1.  **Before the breakpoint (**$t < 100$): $$ E(y_{t+1}|y_{1:t}) = \beta_0 + \beta_1 y_t $$
+
+2.  **After the breakpoint (**$t \geq 100$): $$ E(y_{t+1}|y_{1:t}) = (\beta_0 + \beta_2) + \beta_1 y_t $$
+
+Given that $\varepsilon_t$ is a white noise series with mean 0 and variance $\sigma^2$, the variance of the one-period ahead forecast is constant:
+
+$$ Var(y_{t+1}|y_{1:t}) = \sigma^2 $$
+
+So, we have:
+
+**Before the breakpoint (**$t < 100$): - Mean: $$ E(y_{t+1}|y_{1:t}) = \beta_0 + \beta_1 y_t $$ - Variance: $$ Var(y_{t+1}|y_{1:t}) = \sigma^2 $$
+
+**After the breakpoint (**$t \geq 100$): - Mean: $$ E(y_{t+1}|y_{1:t}) = (\beta_0 + \beta_2) + \beta_1 y_t $$ - Variance: $$ Var(y_{t+1}|y_{1:t}) = \sigma^2 $$
+
+These are the mean and variance of the one-period ahead forecasts for the AR(1) model with a breakpoint at time $t = 100$.
+
+## (e)
+
+To calculate the variance of the $k$-period ahead forecasts of the random walk model:
+
+$$ y_t = y_{t-1} + \varepsilon_t $$
+
+where $\varepsilon_t$ is a white noise series with mean 0 and variance $\sigma^2$, we need to consider that the forecast variance will accumulate with each period.
+
+Given that the forecast at time $t+k$ is $\hat{y}_{t+k|t} = y_t$, because it is just the value at time $t$ plus the sum of $k$ white noise terms.
+
+Mean of the $k$-period ahead forecast: $$ E(\hat{y}_{t+k|t}) = y_t $$
+
+Variance of the $k$-period ahead forecast: $$ Var(\hat{y}_{t+k|t}) = Var(y_t + \varepsilon_{t+1} + \varepsilon_{t+2} + \ldots + \varepsilon_{t+k}) $$ $$ = Var(y_t) + Var(\varepsilon_{t+1}) + Var(\varepsilon_{t+2}) + \ldots + Var(\varepsilon_{t+k}) $$ $$ = k\sigma^2 $$
+
+So, the variance of the $k$-period ahead forecast increases linearly with $k$. This means the uncertainty in the forecast increases with the forecast horizon.
+
+This result supports the claim that the random walk model might not have good performance for multiple period ahead forecasts. As $k$ increases, the forecast variance increases without bound. This means that the further into the future you try to forecast, the less accurate your forecast is likely to be, and the larger the potential error. Therefore, while the random walk model might perform well for short-term forecasts, it is not suitable for long-term forecasting.
+
+# Question 2
+A regression with non-stationary data can lead to a spurious regression. 
+
+## (a) 
+
+```{r}
+# Simulate two independent random walks
+set.seed (12345)
+rwalk1 <- c(cumsum(rnorm(1000)))
+rwalk1.ts <- ts(rwalk1)
+rwalk2 <- c(cumsum(rnorm(1000)))
+rwalk2.ts <- ts(rwalk2) 
+
+# Plot the two simulated series
+plot(rwalk1.ts, type = "l", col = "blue", ylab = "Value", 
+     main = "Two Independent Random Walks", 
+     ylim = c(min(rwalk1.ts, rwalk2.ts), max(rwalk1.ts, rwalk2.ts)))
+lines(rwalk2.ts, col = "red")
+abline(h = 0, lty = 2)
+legend("topleft", legend = c("Random Walk 1", "Random Walk 2"), col = c("blue", "red"), lty = 1)
+
+```
+- The series are simulated to be independent, there should not be any systematic relationship or "co-movement" between them.
+
+- Some occasional periods where the two series appear to move together or diverge, but these movements are very likely to be coincidental and do not imply any underlying relationship between the series.
+
+## (b)
+Fit the AR model to rwalk1.ts
+```{r}
+#acf and pacf of the serie rwalk1.ts
+acf(rwalk1.ts)
+pacf(rwalk1.ts)
+
+#Fit the AR model to rwalk1.ts
+ar_rwalk1 <-  ar.ols(rwalk1.ts, aic = 1)
+ar_rwalk1
+
+```
+- Coefficient is 0.9954, very close to 1, hence, it could be the case that unit root is present and the data is not stationary. 
+
+- Inspecting the plot of `rwalk1.ts`, we can see that the mean increases and does not converge over time.
+ 
+## (c)
+Obtain the ‘spurious regression results’ by estimating a linear regression model regressing the first series on the second
+```{r}
+lm_model <- lm(rwalk1.ts ~ rwalk2.ts)
+summary(lm_model)
+
+```
+The coefficient of -1.51733 with a p-value less than 0.01 suggests a strong negative relationship between the two series, while they are not. Because rwalk1.ts and rwalk2.ts are independent.
+
+This significant coefficient could be considered a spurious result because the significant relationship is purely by chance. In this case, although the two series (rwalk1.ts and rwalk2.ts) are simulated to be independent random walks, they both have a increasing/decreasing trend over time and therefore occasionally have co-movement by chance. The significant coefficient of rwalk2.ts could be a result of this chance co-movement rather than due to the true relationship between the variables.
+
+## (d)
+Remove the problem of a spurious regression
+
+```{r}
+#testing if rwalk1.ts is stationary by ADF and KPSS test
+tseries::adf.test(rwalk1.ts)
+tseries::kpss.test(rwalk1.ts, null = "Trend") #Trend of mean increasing over time
+
+#testing if rwalk2.ts is stationary by ADF and KPSS test
+tseries::adf.test(rwalk2.ts)
+tseries::kpss.test(rwalk2.ts, null = "Trend") #Trend of decreasing mean over time
+```
+Running Augmented Dickey-Fuller Test on random walk 1 produce a $p-value= 0.6515$, which is not significant. Therefore we cannot reject the null hypothesis here: the time series is non-stationary. Random walk 1 is confirmed as non-stationary by adf.test
+
+Similarly, using adf.test on random walk 2 also result in a non-significant $p-value = 0.2655$, which confirmed that random walk 2 is non-stationary.
+
+```{r}
+#Difference `rwalk1.ts` and `rwalk2.ts`
+d_rwalk1.ts <- diff(rwalk1.ts)
+d_rwalk2.ts <- diff(rwalk2.ts)
+#testing if 2 deffencing time series are stationary 
+tseries::adf.test(d_rwalk1.ts)
+tseries::adf.test(d_rwalk2.ts)
+```
+
+ADF test for both differecing time series `d_rwalk1.ts` and `d_rwalk2.ts` have p-values lower than 0.01. therefore, we reject the null hypothesis that unit roots are present in the sample. The first differences are stationary. Plot of 2 differenced random walk, showing below, also so that there is no trend in the 2 random walk after differencing.
+
+```{r}
+# Plot the two simulated series
+plot(d_rwalk1.ts, type = "l", col = "blue", ylab = "Value", 
+     main = "Two Differenced Random Walks", 
+     ylim = c(min(d_rwalk1.ts, d_rwalk2.ts), max(d_rwalk1.ts, d_rwalk2.ts)))
+lines(d_rwalk2.ts, col = "red")
+abline(h = 0, lty = 2)
+legend("topleft", 
+       legend = c("Differenced Random Walk 1", "Differenced Random Walk 2"), 
+       col = c("blue", "red"), lty = 1)
+```
+
+**Obtain the new regression results with the (differenced or integrated) time series**
+```{r}
+lm_model <- lm(d_rwalk1.ts ~ d_rwalk2.ts)
+summary(lm_model)
+```
+
+- In the spurious regression result, we see a significant coefficient for rwalk2.ts (-1.51733) with a p-value < 0.01, suggesting a strong negative relationship between the two series. However, this result was likely due to the non-stationarity of the original series and spurious correlation.
+
+- When regressing the differenced series d_rwalk1.ts on d_rwalk2.ts, we find that the coefficient of d_rwalk2.ts is 0.03761 with a p-value of 0.231, indicating that it is not statistically significant. This suggests that once we difference the series to remove the non-stationarity, the relationship between the two series disappears. It means that the previous significant coefficient was likely spurious.
+
+# Question 3
+
+## (a)  
+
+Estimate a linear regression model (using lm) where the number of searches for `historical data` are explained by an intercept and the number of searches for `computational`
+```{r}
+#load data
+correlate_historical_data <- read.csv("correlate-historical_data.csv")
+
+# Define histData and computational
+histData <- correlate_historical_data$historical.data
+computational <- correlate_historical_data$computational
+
+#linear model regressing histData on computational
+lm_model_hist <- lm(histData ~ computational)
+summary(lm_model_hist)
+
+#Visualize histData and computational 
+histData.ts <- ts(histData)
+computational.ts <- ts(computational)
+#plot two series on the same graph
+seqplot.ts(histData.ts, computational.ts, colx = 'black', coly = 'red')
+legend("topright", legend = c("histData", "computational"),
+col = c("black", "red"), lty = 1) 
+
+#zooming into period of 4 years
+plot(histData.ts[1:208], type = 'l',
+main="weekly number of Google searches for 'histData")
+
+#Correlation between histData and computational
+cor(histData, computational)
+```
+
+The coefficient of `computational` is positively significant (estimate = 0.918) and $R^2 = 0.842$ means that *computational* explains 84% histData. The two series seem to have same decreasing trend overtime. The correlation between two series indicates a strong positive correlation between two variables. Notice that there may be outliers around week 250th in the histData. While, we do not see any shock in the compuational variable.
+
+## (b)
+```{r}
+# Estimate an AR(3) model for histData
+library(forecast)
+ar3 <- Arima(histData.ts, order = c(3,0,0), xreg = computational.ts)
+
+#Test the significance of the model coefficients using t-tests
+coeftest(ar3)
+```
+
+$AR(3)$ model with *computational* as external regressor also results in significant p-value for *computational*, however in this model, the coefficient has decreased to only 0.8261711, compared to high coefficient 0.917576 in (a). Lag variable ar1 is also significant with decent coefficient (0.4675639),  which means that while *computational* still impact the movement of histData, histData is also heavily effect by autoregression.
+
+**Further comparing the residuals of linear and AR(3) model:**
+
+```{r warning=FALSE}
+#calculate residuals
+residuals_lm <- residuals(lm_model_hist)
+residuals_ar3 <- residuals(ar3)
+
+#plot residuals on one plot
+date <- c(1:length(residuals_lm))
+
+plot(date, residuals_lm, type = "n",
+xlab = "date", ylab = "residuals", main = "comparing residuals")
+lines(date, residuals_lm, type = "l", col = "green")
+lines(date, residuals_ar3, type = "l", col = "blue")
+# Add a legend
+legend("topright", legend = c("residuals_lm", "residuals_ar3"),
+col = c("green", "blue"), lty = 1) 
+# add true value as a horizontal line 
+abline(h = 0, col = 'red')
+```
+
+The residuals of $AR(3)$ model seems to have lower variance, hence prediction of $AR(3)$ model could be more consistent comparing to `lm_model`.
+
+## (c)
+
+The new random variable $y_t$:
+
+$$ y_t = x_t - \beta \times \text{trend}_t $$
+
+Substituting the expressions for $x_t$ and $\text{trend}_t$, we get:
+
+$$ y_t = (x_{t-1} + \varepsilon_t) - \beta \times (\text{trend}_{t-1} + 1) $$
+
+$$ y_t = x_{t-1} - \beta \times \text{trend}_{t-1} + \varepsilon_t - \beta $$
+
+Now, since $x_{t-1} = x_{t-2} + \varepsilon_{t-1}$ and $\text{trend}_{t-1} = \text{trend}_{t-2} + 1$, we can substitute these into the equation:
+
+$$ y_t = (x_{t-2} + \varepsilon_{t-1}) - \beta \times (\text{trend}_{t-2} + 1) + \varepsilon_t - \beta $$
+
+$$ y_t = x_{t-2} - \beta \times \text{trend}_{t-2} + \varepsilon_{t-1} - \beta + \varepsilon_t - \beta $$
+
+Continuing this process $k$ times, we get:
+
+$$ y_t = x_{t-k} - \beta \times \text{trend}_{t-k} + \sum_{i=1}^{k} \varepsilon_{t-i} - k \times \beta $$
+
+Now, let $k = 1$, we have:
+
+$$ y_t = x_{t-1} - \beta \times \text{trend}_{t-1} + \varepsilon_t - \beta $$
+
+$$ y_t = y_{t-1} - \beta + \varepsilon_t $$
+
+Thus, we see that $y_t$ is a random walk.
+
+**The motivation behind using the two-step trend detection method**
+
+As we can see a random walk series can have both deterministic trend and stochastic trend, for example variable y(t). Hence, only testing for either deterministic trend or stochastic trend is not sufficient to remove the problem of a spurious regression. Two-step trend detection method is necessary. If after removing deterministic trend, time series is still non-stationary then there is stochastic trend that have to be removed.
+
+## (d)
+```{r}
+# Creating deterministic trend vector
+time <- seq_along(histData.ts)
+
+# deterministic trend
+d_trend <- lm(histData.ts ~ time)
+
+# Detrend the data
+detrended_histData <- histData.ts - d_trend$fitted.values
+
+#### plot original and detrended data ####
+plot(histData.ts)
+plot(detrended_histData)
+
+#### stationary test for detrended data ####
+adf.test(detrended_histData)
+
+##### acf and pacf of detrended data####
+acf(detrended_histData)
+pacf(detrended_histData)
+
+#####acf and pacf of the original data ####
+adf.test(histData.ts)
+adf.test(computational.ts)
+```
+
+After removing decreasing trend, the histDate seems to converge to the mean overtime, and the ADF test of type 2 shows that the data is stationary overtime. The ADF of detrended data has many large significant spikes, therefore we suspect that autocorrelation is not completely remove within a year, however, it does not cause problem about stationarity for the whole dataset. Inclusion, `histData` has deterministic trend. 
+
+
+**Question for the tutorial: The original histData is alreadry statinary, what is the effect after detrending?**
+
+The purpose of this question is to show that even though 2 variables is not correlated, the linear regression coefficient could be significant because they have the same trend, simultaneously moving up or down. but it is the problem of spurious regression. After removing trend, if we run linear regression, the estimated coefficient will be smaller than the original data. but if the coefficient is still significant, then there still be spurious regressin issue.
+
+# Question 4
+
+## (a)
+Split the data into an estimation (training) sample and a forecast (test) sample. Specifically, leave out the last 92 observations of the data for forecast comparisons.
+
+```{r}
+data(beersales)
+estimate_beersales <- beersales[1:(length(beersales)-92)]
+forecast_beersales <- beersales[(length(beersales)-91):length(beersales)]
+```
+
+## (b)
+Estimate two ARMA models for the estimation data: estimate an ARMA(1,1) model, and an ARMA(1,1) model with a deterministic trend. 
+```{r}
+# Define time variable within a year
+time <- time <- rep(1:12, length(beersales)/12)[1:length(estimate_beersales)]
+
+# Applying ARMA(1,1) with training data
+arma11 <- Arima(estimate_beersales, order = c(1, 0, 1))
+arma11
+
+# ARMA(1,1) model with deterministic trend
+arma11_trend <- Arima(estimate_beersales, order = c(1, 0, 1), xreg = time)
+arma11_trend
+```
+
+## (c) 
+Forecast/predict the beer sales data for the forecast sample for both models in part (b)
+```{r message=FALSE, warning=FALSE}
+library(forecast)
+# Forecast with ARMA (1,1) model
+for_arma11 <- forecast::forecast(arma11, h = 92, level = c(0.05, 0.95))
+MSFE_arma11 <- mean((forecast_beersales - for_arma11$mean)^2)
+MAFE_arma11 <- mean(abs(forecast_beersales - for_arma11$mean))
+
+# Forecast with ARMA(1,1) model with a deterministic trend
+for_arma11_trend <- forecast::forecast(arma11_trend, h = 92, xreg = time, level = c(0.05, 0.95))
+MSFE_arma11_trend <- mean((forecast_beersales - for_arma11_trend$mean)^2)
+MAFE_arma11_trend <- mean(abs(forecast_beersales - for_arma11_trend$mean))
+
+#Comparing MSFE
+MSFE_arma11
+MSFE_arma11_trend
+```
+
+-   **MSFE**: The ARMA(1,1) model has a slightly lower MSFE (4.082518) compared to the ARMA(1,1) model with a deterministic trend (4.344383). This indicates that the ARMA(1,1) model provides slightly better forecasts in terms of minimizing the squared forecast errors.
+
+```{r}
+#Comparing MAFE
+MAFE_arma11 
+MAFE_arma11_trend
+```
+-   **MAFE**: Similarly, the ARMA(1,1) model has a slightly lower MAFE (1.68038) compared to the ARMA(1,1) model with a deterministic trend (1.731621). This indicates that the ARMA(1,1) model provides slightly better forecasts in terms of minimizing the absolute forecast errors. 
+
+- In summary, based on both MSFE and MAFE metrics, the ARMA(1,1) model performs slightly better than the ARMA(1,1) model with a deterministic trend in forecasting the beer sales data. However the improvement is so small.
+
+## (d)
+
+```{r}
+#Plot the forecasts and the forecast intervals of the ARMA(1,1)
+plot(for_arma11)
+
+#Plot the forecasts and the forecast intervals of the ARMA(1,1) with trend
+plot(for_arma11_trend)
+```
+- In both plot of forecast result for ARMA(1,0) model, we can see that the interval (represent by gray area) is large, this is because we calculated error interval at confident of level 5% and 95%. Gray area is large to ensure that 95% of prediction will fall into this area.
+
+- The forecast intervals of the ARMA(1,1) model is large because it depends on variance of error term of MA(1) and AR(1) model. Similarly, as we can in question 1b, the variance of the forecast in AR(1) model depend on the variance of white noise of AR(1) model.
+
+# Question 5
+## (a)
+Load and detrend beersales because there is a significant overall increasing trend.
+
+```{r}
+#Define the trend
+plot(decompose(beersales))
+t <-  c(1:length(beersales))
+
+#Detrending the beersales data set
+trend <- lm(beersales ~ t)$fitted.values
+detrend_beersales <- beersales - trend
+
+# Plot the de-trended data
+plot(detrend_beersales)
+abline(h = 0, col ='red')
+
+# ACF of detrended data
+acf(detrend_beersales)
+
+#PACF of detrended data
+pacf(detrend_beersales)
+
+#Monthly average original data
+monthplot(beersales)
+
+#Monthly average detrended data
+monthplot(detrend_beersales)
+abline(h = 0, col ='red')
+
+#ADF test to check for stationarity of the data
+adf.test(beersales)
+adf.test(detrend_beersales)
+```
+
+- When decomposing `beersales`, we see that the data set has upwards trend and seasonality pattern. Within a year sales of beer are high from May to August, alluding seasonality. After detrending by removing increasing trend, the monthly average shows that mean of beer sales is still high from May to August within a year but the plot the de-trended data show beer sales mean does not increase and it converges over time. Therefore, we can conclude that the series is stationary across 1975 to 1990. Considering the ACF and PACF plot, there are large spike within a year, indicating seasonality has not been removed.
+
+- ARMA is suitable for series without trend or seasonal components and SARMA (Seasonal ARMA) is used when the time series data has significant seasonal patterns but no trend.
+
+- ARIMA model is used for series with trend but no seasonality. SARIMA (Seasonal ARMA) then is used when the time series has seasonal pattern and trend 
+
+- The series `detrend_beersales` is seasonality and no trend, hence, it is suggested to apply SARMA.
+
+## (b)  General to specific model selection
+
+```{r}
+library(astsa)
+sarma10 <- sarima(detrend_beersales, p = 10,  d = 0, q = 0, P = 1, S = 12) 
+#P: Seasonal AR order
+#D: seasonal difference
+#Q: Seasonal MA order
+#S: seasonal period
+#P = 1, S =12: meaning 1 seasonal lag with seasonal period = 12.
+```
+
+*Question for the tutorial: what is the value for S, if the data are recorded weekly, does it mean S*
+
+**Interpreting model sarma10**
+The coefficient of lag 10 is not significant at the level 0.05, therefore, we remove ar10 and re-estimate the model again with sarima(p = 9, P = 1, S = 12)
+
+```{r}
+sarma9 <- sarima(detrend_beersales, p = 9,  d = 0, q = 0, P = 1, S = 12)
+```
+The coefficient of lag 9 is not significant at the level 0.05, therefore, we remove ar9 and re-estimate the model again with sarima(p = 8, P = 1, S = 12)
+
+```{r}
+sarma8 <- sarima(detrend_beersales, p = 8,  d = 0, q = 0, P = 1, S = 12)
+```
+The coefficient of lag 8 is not significant at the level 0.05, therefore, we remove ar8 and re-estimate the model again with sarima(p = 7, P = 1, S = 12)
+```{r}
+sarma7 <- sarima(detrend_beersales, p = 7,  d = 0, q = 0, P = 1, S = 12)
+```
+
+The coefficient of lag 7 is significant at the level 0.05 and there is no large spike in the ACF of Residuals plot, hence, we select ARMA(7, 0) model with 1 seasonal lag to fit the `detrend_beersales` data. However, Ljung-Box plot shows that within a year, there are no large amount of autocorrelation left in the residuals.
+
+## (c) Specific to general model selection
+
+```{r}
+sarma2 <- sarima(detrend_beersales, p = 2,  d = 0, q = 0, P = 1, S = 12)
+```
+First, the ACF of Residuals shows some significant spike. Second, The Ljung-Box, which is used to test if the residuals are autocorrelated, thus, we want to obtain p-values larger than 0.05. The Ljung-Box shows that all p-values are significant, meaning that residuals of ARMA(2, 0) model are autocorrelated. Third, The normal Q-Q plot of the residuals indicate whether the residuals are normally distributed, thus, meeting the assumption of ARMA model. When we inspect the diagnostics of the residuals, we want the residuals points to fall approximately on a straight line. In this case, the residuals after fitting ARMA(2,0) model follow normal distribution. Lastly, p-value of ar2 is non-significant, hence we increase the AR lag to 3.
+
+```{r}
+sarma3 <- sarima(detrend_beersales, p = 3,  d = 0, q = 0, P = 1, S = 12)
+```
+The residual diagnostics of ARMA(3,0) model show the similar problems as ARMA(2,0) with some significant spikes in ACF plot, low p-values in Ljung-Box statistic, and insignificant coefficient of ar3, therefore we increase the AR lag to 4.
+
+```{r}
+sarma4 <- sarima(detrend_beersales, p = 4,  d = 0, q = 0, P = 1, S = 12)
+```
+
+- The coefficient of ar4 is significant at level 0.05. Although, residuals seem to be autocorrelated with many significant p-values in the Ljung-Box, the ACF of Residuals shows only some slightly significant spikes. Thus, there is no major problems.
+
+- Increase to AR lag to 5 and 6 sequentially to test if there is any change in p-values of Ljung-Box statistic
+```{r}
+sarma5 <- sarima(detrend_beersales, p = 5,  d = 0, q = 0, P = 1, S = 12)
+```
+```{r}
+sarma6 <- sarima(detrend_beersales, p = 6,  d = 0, q = 0, P = 1, S = 12)
+```
+
+When increasing AR lag to 5 and 6, we do not see any change in p-values of Ljung-Box statistics. Moreover, the coefficients of lag 5 and 6 are not significant at level 0.05. Therefore, we select model SARMA(4, 0, 0)(1, 0, 0)[12] as the final model.
+
+**Conclusion: The selected model in part b is different from part c, hence further use BIC to compare these models**
+
+## (d) Model choice based on information criteria
+```{r}
+BIC <-
+  c(
+    "SARMA(10,0)" = BIC(sarma10$fit),
+    "SARMA(9,0)" = BIC(sarma9$fit),
+    "SARMA(8,0)" = BIC(sarma8$fit),
+    "SARMA(7,0)" = BIC(sarma7$fit),
+    "SARMA(6,0)" = BIC(sarma6$fit),
+    "SARMA(5,0)" = BIC(sarma5$fit),
+    "SARMA(4,0)" = BIC(sarma4$fit),
+    "SARMA(3,0)" = BIC(sarma3$fit),
+    "SARMA(2,0)" = BIC(sarma2$fit)
+  )
+
+BIC
+```
+Based on BIC scores, SARMA(4,0) will be the best performing model, and SARMA(5,0) is the second best performing.
+Combining with the coefficient test, we should select model SARMA(4, 0, 0)(1, 0, 0)[12]. Considering the `detrend_beersales` dataset, the sales of beer have repeated pattern of seasonality that is consistent across each year and AR lag 4 suggests that, observations depend on the previous four observations in the series.
+
+## (e) Model choice for non-nested models using information criteria
+
+```{r}
+t <- 1:length(detrend_beersales)
+cos.t <- cos(2*pi*t/12) 
+sin.t <- sin (2*pi*t/12)
+outSinCos <- lm(detrend_beersales ~ cos.t + sin.t)
+BIC(outSinCos)
+```
+
+The sine-cosine regression model estimates beer sales on seasonal pattern. The BIC of this regression is higher than model SARMA(4, 0, 0)(1, 0, 0)[12]. Therefore we choose ARMA(4, 0) model with 1 seasonal lag to fit the detrended beer sales
+
+## (f)
+
+$y_t = \beta_0 + \beta_1 y_{t-1} + \epsilon_t$
+
+This is nesting model, as it currently cannot transform into another model if $\beta_1 = 0$. However, It can become nested model if we move it one-step forward.
+
+$y_t = \alpha_0 + \alpha_1 y_{t-1} + \alpha_2 y_{t-2} + \epsilon_t$
+
+This is nested model as it has 2 coefficient $\alpha_1$ $\alpha_2$ that if equal to 0 will convert the model into other models.
+
+## (g)
+
+**Comparison of Trend and De-trended Models:**
+
+We cannot directly compare a model for beer sales (not de-trended) with a model for de-trended beer sales using model comparison tools like AIC, BIC, or likelihood ratio tests. This is because the two models have different numbers of parameters and represent different statistical relationships.
+
+**Reasons:**
+
+1.  **Different Number of Parameters:**
+    -   The model for de-trended beer sales includes additional parameters to capture the trend component. Therefore, it has more parameters compared to the model for beer sales without detrending.
+    
+2.  **Different Statistical Relationships:**
+    -   The de-trended model focuses on capturing the underlying patterns in the data by removing the trend component. On the other hand, the model for beer sales without detrending includes the trend component.
