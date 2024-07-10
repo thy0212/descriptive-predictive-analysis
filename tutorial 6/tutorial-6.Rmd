@@ -1,0 +1,288 @@
+---
+title: "Assignment-6"
+author: "Thy Nguyen - Minh Pham"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r message=FALSE, warning=FALSE}
+setwd("/Users/atnguyen/Downloads/5.DPA/tutorial 6")
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+library('plm')
+library('gplots') # for plots
+library('graphics')
+library('car') # for panel scatterplot
+#load the dataset
+data("EmplUK")
+# View(EmplUK)
+names(EmplUK)
+EmplUK <- pdata.frame(EmplUK, index = c("firm", "year"))
+summary(EmplUK)
+EmplUK$sector <- as.factor(EmplUK$sector)
+EmplUK$firm <- as.factor(EmplUK$firm)
+```
+
+## (1) Visually analyze the employment levels across firms and across sectors
+
+### Employ
+```{r message=FALSE, warning=FALSE}
+####### Inspecting heterogeneity across sectors ############
+#creates scatter plots of employment against firms for each sector
+coplot(emp ~ firm | sector, type = "p",
+       data = EmplUK,
+       rows = 1)
+
+#creates a plot showing box-plot employment for each sector
+plot(emp ~ sector, data = EmplUK, type = "p",
+     main = "Heterogeneity across sectors - box-plot",
+     xlab = "Sector", ylab = "Employment")
+
+plotmeans(emp ~ sector, data = EmplUK,
+  main = "Heterogeneity across sectors",
+  ylab = "employment", xlab = "sector",
+  col = "blue",
+  mean.labels = TRUE)
+
+######## Inspecting heterogeneity across firm ##########
+coplot(emp ~ sector|firm, type = "p", data=EmplUK, rows = 1) 
+#creates a plot showing mean employment for each firm
+plotmeans(emp ~ firm, data = EmplUK,
+  main = "Heterogeneity across firm",
+  ylab = "employment",nxlab = "firm",
+  col = "blue")
+
+######## Inspecting heterogeneity across year ##########
+coplot(emp ~ sector|year, type = "p", data=EmplUK, rows = 1) 
+plotmeans(emp ~ year, data = EmplUK,
+  main = "Heterogeneity across year",
+  ylab = "employment",nxlab = "year",
+  col = "blue")
+```
+
+
+
+- **Employment against firms for each sector**: In the graph, sectors 5, 6, and 7, could have higher employment The value of employment disperses in these sectors compared to the other sectors. Similarly, when inspecting the plot of mean employment, sector 5, 6, and 7 also have slightly higher mean employment. It could be because sector 5, 6, and 7 include companies that have high level of employment. therefore the high level of employment could depend on not only on the sectors but also on the company. Considering the number of companies, we can see that the number of companies varies across sectors. Especially, sector 6 has significantly lower number of companies (n = 36)
+
+*Question for the tutorial* the Box-plot shows that the median does not vary across sectors. What can we conclude when comparing the box-plot and the plot of mean?
+
+- **Employment against sectors for each firm**:Each firm has its own employment level and does not change over years and there are firms that have a higher employment than others. It's suggested that there is heterogeneity across firm and employment level depends on firm.
+
+- The heterogeneity of employment across sectors seems to be stable over year. It means that the variability of employment across sectors does not change over years, suggesting that there could be a fixed-effect related to sector and these fixed effect does not change over time. Additionally, mean of employment does not depend on year. For the year 1984, the mean of employment slightly decreases, it could be because the number of companies in 1984 is lower than that in the other years,yet further tests are needed to check the stationary for time-series data.
+
+### Wage
+
+```{r message=FALSE, warning=FALSE}
+####### Inspecting heterogeneity across sectors ############
+coplot(emp ~ wage|sector, type = "p", data=EmplUK)
+coplot(emp ~ wage|year, type = "p", data=EmplUK)
+#coplot(emp ~ wage|firm, type = "p", data=EmplUK)  
+
+plotmeans(wage ~ sector, data = EmplUK,
+  main = "Heterogeneity of wage across sector",
+  ylab = "wage", xlab = "sector",
+  col = "blue",
+  mean.labels = T)
+plotmeans(wage ~ firm, data = EmplUK,
+  main = "Heterogeneity of wage across firm",
+  ylab = "wage", xlab = "firm",
+  col = "blue",
+  mean.labels = F)
+```
+
+- The scatter plots of employment against wage for each sector shows that the relationship between wage and employment different from each sectors. For example within sector 1 and 5, employment is high at some specific values of wage. While the within the sectors 2, 3, 8, and 9, employment seems not to change across wage. Similarly, the pattern of scatter plot of employment against wage for each firm is also different across firms.
+
+- The relationship between employ and wage does not vary over years, the scatter plots of employment against wage for each year seem to have similar pattern. 
+
+- When plotting mean of wage across sectors, the wage mean differ across sectors with range from 16.82 (sector 7) to 30.55 (sector 2). Similarly, mean wage varies across firms
+
+- In general, based on these graph, it is suspected that the relation between wages and employment can depend on the firms and sectors.
+
+## (2) Pooled OLS
+
+```{r}
+# Estimate a linear regression model
+ols <- lm(emp ~ wage, data = EmplUK)
+print(summary(ols))
+# Plot the data points together with the fitted OLS line
+plot(as.numeric(EmplUK$wage), EmplUK$emp, xlab = "wage", ylab = "employment")
+abline(ols, col = "red")
+```
+
+The plot shows that employment is high when wage is between 15 and 25 and when wage is higher than 30, there are fewer data points of high employment level. From the plot and also the model summary we can see that employment slightly decreases when wage increases. Specifically, the coefficient of wage is negative (coefficient = -0.30672) and significant (p-value < 0.05). It means that when wage increases 1 unit, employment decrease 0.30672 unit. 
+ 
+## (3) Linear model with dummy variables
+
+```{r}
+# Sector dummy variables
+fixed.dumSec <- lm(emp ~ wage + factor(sector) - 1, data=EmplUK)
+print(summary(fixed.dumSec))
+
+fixed.dumFirms <- lm(emp ~ wage + factor(firm) - 1, data=EmplUK)
+print(summary(fixed.dumFirms))
+```
+
+
+**Model Employment with Sector Dummies**, the model specification is: $$ \text{emp} = 0.04026 \cdot \text{wage} + \sum_{i=1}^{9} \beta_{i} \cdot \text{sector}_i + \epsilon_i$$
+
+Where $\text{sector}_i$ are dummy variables representing the nine different sectors and each dummy variable informs whether an observation belongs to a particular sector. 
+
+- The coefficient for wage is 0.04026 (p-value = 0.73005). This indicates that wage is not a significant predictor of employment in this model, when we account for the effect of sector. After controlling for wage, sectors 1, 5, 6, and 7 positively impact employment at the significant level 0.05. It mean that their effects on employment level are not because of randomness and the estimates indicate that these sectors have higher employment level compared to the other sectors. Therefore, there are likely sector-specific factors that affect employment in this case.
+
+**Model Employment with Firm Dummies**
+
+The model specification is: $$ \text{emp} = -0.13688 \cdot \text{wage} + \sum_{i=1}^{100} \beta_{i} \cdot \text{firm}_i + \epsilon_i$$
+
+Where $\text{firm}_i$ are dummy variables representing the different firms.
+
+- `wage` has negative impact on `emp` ( coef = -0.13688 and p-value = 0.000125). After controlling for wage, all of the coefficients of firms are significantly positive at the significant level 0.05. It means that `emp` is different across `firm`.
+
+- Comparing Adjusted R-squared between fixed.dumSec and fixed.dumFirms: Adjusted R-square of fixed.dumSec is 0.2602, indicates that approximately 26.02% of the variability in employment is explained by wage and sector factors. This is not high and the model explains only a small portion of the variability in employment, implying that there may be other important factors not included in the model. While the adjusted R-squared `fixed.dumFirms` is very high (0.9824), however, it could be over fitted. 
+
+## (4) Model comparison
+```{r message=FALSE, warning=FALSE}
+# Model comparison
+cat("Information criteria for OLS and OLS with Dummy", fill = TRUE)
+print(c(AIC(ols), AIC(fixed.dumSec), AIC(fixed.dumFirms)))
+print(c(BIC(ols), BIC(fixed.dumSec), BIC(fixed.dumFirms)))
+```
+
+Comparing the AIC and BIC of three models (`OLS`, `fixed.dumSec`,` fixed.dumFirms`), the models with dummy variables for `firm` and `sector` have a better fit than the OLS model. The model with dummy variables for `firm` performs best, with the lowest AIC (4826.951) and BIC (5528.187). This suggests that firm and sector have specific effects on the relationship between `emp` and `wage`, and the effect of firm could be stronger than that of the sector. Therefore, accounting for firm-level heterogeneity can significantly improve the model fit.
+
+## (5)  plotting OLS
+```{r warning=FALSE}
+# Visual comparison of Pooled OLS and Pooled OLS with sector dummy
+par(mar = c(2, 2, 1, 1))
+yhat <-  fixed.dumSec$fitted
+scatterplot(yhat ~ EmplUK$wage + factor(EmplUK$sector), boxplots = FALSE, 
+            xlab = "wage", ylab = "employment", smooth = FALSE)
+points(y = EmplUK$emp, x = EmplUK$wage, add = TRUE)
+abline(lm(EmplUK$emp ~ EmplUK$wage),lwd = 3, 
+         col="red")
+```
+
+The graph shows that when we look at all the data together without considering the different sectors, the OLS line shows a negative relationship between `employment` and `wage.` However, when considering the different sectors, we see that within each sector, there is a slight positive relationship between these two variables. 
+
+The reasons could be that when wages increase, employment in sectors with low employment (e.g., sectors 2, 3, 4, and 9) increases more than in sectors with high employment (sectors 5, 6, and 7). Therefore, in general, we observe a decreasing trend when looking at the whole data set. Specifically, on the one hand, sectors 5, 6, and 7 start with high employment when wages are low and only increase up to specific wage values. After those values, wages do not increase further, and employment in these sectors does not contribute to the whole dataset, leading to a decrease in the total number of `emp`. On the other hand, within the other sectors, wages keep increasing and, thus, employment also increases. However, because these sectors have low employment levels, the total number of employment does not significantly increase to compensate for the decreasing amount in the whole dataset. As shown below, the `max_wage` of sectors 5, 6, and 7 are the lowest compared to the `max_wage` of the other sectors. However, in terms of employment, sectors 5, 6, and 7 have the highest `max_emp`
+
+In conclusion, the sector-specific factors should be considered to model the relationship between `wage` and `emp` because heterogeneity between sectors could affects both wages and employment. In this case, The OLS model ignores sector differences and the results are biased estimates if sector-specific factors are significant.
+
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+EmplUK %>% group_by(sector) %>% summarise(min_wage = min(wage), max_wage = max(wage))
+EmplUK %>% group_by(sector) %>% summarise(min_emp = min(emp), max_emp = max(emp))
+```
+
+## (6) calculate the predicted employment with `fix.dumSec`
+
+```{r}
+# Extracting coefficients of wage and coresponding sector
+coef_wage <-  fixed.dumSec$coefficients["wage"]
+coef_sector_3 <-  fixed.dumSec$coefficients["factor(sector)3"]
+avg_wage <- 23.9
+
+# Predicted emp
+emp_pred_sector3 <- coef_wage*avg_wage + coef_sector_3
+cat("The predicted employment of a firm in sector 3 with average wage 23.9 is ", round(emp_pred_sector3, 2), "\n")
+```
+## (7) Fixed effect model
+
+```{r}
+# Sector dummy variables
+wageFE_dummy <- plm(emp ~ wage + factor(sector) - 1,
+              data = EmplUK, model = "within",
+              effect = "individual")
+wageFE <- plm(emp ~ wage, 
+              data = EmplUK, model = "within",
+              effect = "individual")
+plot(unique(EmplUK$firm), fixef(wageFE, effect = "individual"),
+     xlab = 'firm', ylab = 'wages')
+```
+
+```{r}
+summary(fixef(wageFE_dummy))
+```
+
+Fixed effect model with sector dummy variables gives all 140 firms non-zero fixed effect, all significant with p-value \<0.05. Firm 86 have highest fixed effect figure at 104.4704.
+
+```{r}
+summary(fixef(wageFE))
+```
+
+Fixed effect model with no dummy variables also gives all 140 firms non-zero fixed effect, all significant with p-value \<0.05. Firm 86 have highest fixed effect figure at 104.4704. Which mean dummy variable have no effect with fixed effect model.
+
+## (8)  predicted employment 
+```{r}
+# True employment level of firm 140
+firm_140 <- EmplUK[EmplUK$firm == 140, ]
+mean_wage_140 <- mean(firm_140$emp)
+
+######## Prediction with model wageFE ##########
+# Extracting coefficients of wage and corresponding firm
+coef_wageFE <-  wageFE$coefficients["wage"]
+coef_firm140_wageFE <-  fixef(wageFE)[140]
+avg_wage <- 23.9
+
+# Predicted emp
+emp_pred_140_wageFE <- coef_wageFE*avg_wage + coef_firm140_wageFE
+
+########### Prediction with model fixed.dumFirms ##########
+
+coef_wage_dumFirms <-  fixed.dumFirms$coefficients["wage"]
+coef_firm140_dumFirms <-  fixed.dumFirms$coef["factor(firm)140"]
+
+# Predicted emp
+emp_pred_140_dumFirms <- coef_wage_dumFirms*avg_wage + coef_firm140_dumFirms
+
+######### comparing model ########
+cat("The true mean employment of a firm 140 is ", round(mean_wage_140, 2), "\n")
+
+cat("The predicted employment in a firm 140 with average wage 23.9 (using wageFE) is ", 
+    round(emp_pred_140_wageFE, 2), "\n")
+
+cat("The predicted employment in a firm 140 with average wage 23.9 (using fixed.dumFirms) is ",
+    round(emp_pred_140_dumFirms, 2), "\n")
+```
+
+- The fixed effect model in (7) and the model with dummy Firms variable give the same prediction (the predicted employment in firm 140 with average wage 23.9 is 2.05 in both models) . This firm is in sector 3 and if we use OLS model, the predicted employment is 3.98. 
+
+- Comparing to the true mean employment of a firm 140 (1.33), fixed effect model and model with dummy Firms variable perform better than OLS model. 
+
+## (9) Random effect
+
+```{r}
+# Random effects: correlation with explanatory variable
+wageRE_dummy <- plm(emp ~ wage + factor(sector) - 1,
+                    data = EmplUK, model = "random",
+                    effect = "individual")
+wageRE <- plm(emp ~ wage, 
+              data = EmplUK, model = "random", 
+              random.method = "amemiya",
+              effect = "individual")
+print(summary(wageRE_dummy))
+print(summary(wageRE))
+```
+
+Considering the random effects model with dummy variables for 9 sectors, wage has a negative impact on employment (coefficient = -0.135 and p-value < 0.05). Within each sector, when `wage` increases by 1 unit, `emp` decreases by 0.135 units. This result contrasts with the positive coefficient of wage in the fixed effects model. However, similar to the fixed effects model, all the coefficients for sectors are positive. The estimated coefficients for sectors 1, 2, 4, 5, 6, and 7 are positive and significant, with p-values lower than 0.05.
+
+Different coefficient of wage could be because of heterogeneity across sectors, meaning the relationship between wages and employment differently in each sector. The fixed effects model take into account this heterogeneity by isolating the effect of wage within sectors. While, the random effects model assumes that the sector-specific effects are uncorrelated with the other predictors. We can use Hausman test to check for exogeneity assumption.
+
+*Question for the tutorial:* why the Adj R square of these models are low?
+
+## (10)  Hausman test for exogeneity assumption
+
+```{r}
+# Compare FE and RE
+phtest(wageFE, wageRE)
+```
+
+- The random effects assumption is that the individual heterogeneity is uncorrelated with the independent variables. While the fixed effect assumption is that the individual-specific effects are correlated with the independent variables. If the random effects assumption holds, the random effects estimator is more efficient than the fixed effects estimator. However, if this assumption does not hold, the random effects estimator is not consistent. 
+
+- The Hausman test compares the fixed effects and random effects models to check if the exogeneity assumption is violated (e.g., firm-specific effects are correlated with the `wage`). The results show that the p-value = 0.2548 is greater than the significance level of 0.05, hence, we fail to reject the null hypothesis (H0). It is concluded that both the fixed effects and random effects models can be used. The test suggests that the exogeneity assumption in the random effects model is not violated. In other words, the firm-specific effects cannot be correlated with the independent variables `wage` and the random effects model is consistent for the data.
+
+*Discussion for the tutorial*: Summary of 3 models
+
+- The OLS model ignores sector differences, leading to biased estimates if sector-specific factors are significant. 
+
+- The random effects model assumes that sector-specific effects are uncorrelated with the predictors, which might not hold true if there are omitted variables that affect both wages and employment. 
+
+- The fixed effects model, however, controls for all time-invariant sector-specific factors, providing a clearer picture of the within-sector relationship between wages and employment.
