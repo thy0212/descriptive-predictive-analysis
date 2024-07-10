@@ -1,0 +1,342 @@
+---
+title: "Tutorial 1"
+author: "Thy Nguyen - Minh Pham"
+date: "`r Sys.Date()`"
+output:  word_document
+---
+
+
+```{r setup, include=FALSE}
+setwd("/Users/atnguyen/Downloads/5.DPA/tutorial 1")
+library(TSA)
+library(tseries)
+library(ggplot2)
+```
+
+# Question 1
+## (a)
+
+The unconditional expectation of $y_{t}$ is:
+$$
+E(y_t) = E(\beta_0 + \beta_1y_{t-1} + \beta_2y_{t-2} + \epsilon_t)
+$$
+
+With $\beta_0$ is constant and $\epsilon_t$ haven't known ($E(\epsilon_t) = 0$), Using the provided equalities of Expectation, we can write the above expectation into:
+
+$$
+E(y_t) = \beta_0 + \beta_1E(y_{t-1}) + \beta_2E(y_{t-2})
+$$
+
+Equation above can be already be used as unconditional expectation. But if we assume $y_t$ is stationary, so $E(y_t) = E(y_{t-1}) = E(y_{t-2}) = \mu$, then we can rewrite this into:
+
+$$
+\displaystyle \mu = \frac{\beta_0}{1-\beta_1-\beta_2}
+$$
+
+## (b)
+
+A time series model is said to be stationary if it satisfies the following three conditions:
+
+- Constant Mean (μ): The mean of the series remains constant over time. Mathematically, it can be expressed as:
+$$
+E(y_t) = \mu
+$$
+
+- Constant Variance (σ^2): The variance of the series remains constant over time. Mathematically, it can be expressed as:
+$$
+Var(y_t) = \sigma^2
+$$
+
+- Constant Autocovariance: The autocovariance between $y_t$ and $y_{t-1}$ is only dependent on the lag $k$, not on time. Mathematically, it can be expressed as:
+$$
+Cov(y_t,y_{t-k}) = Cov(y_{t+s},y_{t+s-k})
+$$
+These conditions ensure that the statistical properties of the time series do not change over time, making it easier to model and forecast.
+
+## (c)
+
+Insert all provided variables into equation from (a) : 
+$E(y_t) = \beta_0 + \beta_1E(y_{t-1}) + \beta_2E(y_{t-2})$, 
+
+we have:
+$$E(y_t| y_{t-1},y_{t-2}) = 1 + 0.5 \times 0.1 + 0 \times 0.2\\
+E(y_t) = 1.05$$
+
+## (d)
+
+$$
+E(y_t| y_{t-k}) = E(y_{t-1}+\epsilon_t | y_{t-k}) \\
+E(y_t| y_{t-k}) = E(y_{t-1}| y_{t-k}) + E(\epsilon_t | y_{t-k} )\\
+$$
+
+Because $E(\epsilon_t | y_{t-k} ) = 0 $
+
+
+$$
+E(y_t| y_{t-k}) = E(y_{t-1}| y_{t-k})
+$$
+
+Repeat the process with $y_{t-1}$ and backward:
+
+$$
+y_{t-1} = y_{t-2} + \epsilon_{t-1}\\
+...\\
+y_{t-k} = y_{t-k-1} + \epsilon_{t-k}
+$$
+
+Substituting these into the equation:
+
+$$
+E(y_t| y_{t-k})= E(y_{t-1}| y_{t-k}) = E(y_{t-2}| y_{t-k}) \\= E(y_{t-3}| y_{t-k})
+= E(y_{t-4}| y_{t-k})... = E(y_{t-k}| y_{t-k}) = y_{t-k}
+$$
+
+# Question 2
+## (a)
+
+```{r}
+?beersales
+data(beersales)
+# Check whether beersales is a ts object
+is.ts(beersales)
+
+# View the start, end, and frequency of beersales
+start(beersales)
+end(beersales)
+frequency(beersales)
+
+# Use ts.plot with beersales to get a plot with a common y-axis
+par(mar=c(2, 2, 1, 1))
+salebeer_plot <- ts.plot(beersales, xlab = "Year", ylab = "Sales", main = "Beer sales, 1975-1990")
+
+#customize the beersales to plot the acf and pacf against the x-axis of month units
+beersales_plot <- ts(beersales, start = 1, frequency = 1)
+plot(decompose(beersales))
+# correlation properties of the data 
+acf(beersales, lag.max = 192)
+```
+```{r}
+pacf(beersales)
+```
+
+1. There is a trend component which grows the beer sales year by year. The `salebeer_plot` shows that sales of beer smoothly increases in the period from 1975 to 1980. However, after 1980, the beersales seems to become stable. Additionally, there is a repeated pattern in beer sales across the observed period
+
+2. There is a seasonal component which has a cycle of 1 year. Seasonal pattern observed in both the ACF and PACF plots. The ACF shows significant spikes at lags that are multiples of 12 (yearly), e.g., lag 12, 24, 36, indicating a clear seasonal pattern. PACF shows a large spike at the lag 1 that decreases after a few lags.
+
+## (b)  Test the beer sales data for stationarity
+
+```{r}
+# Run Augmented Dickey Fuller test
+adf.test(beersales, k = 5)
+adf.test(beersales, k = 12)
+
+# Run KPSS test
+kpss.test(beersales, null ="Trend")
+
+
+```
+
+In the ADF test, the p-value is lower than 0.01, thus, we reject the null hypothesis that the beersales data is non-stationary. It means that the data set is stationary (does not has unit root). Notice that the ADF check stationary by difference. According to ADF, the data set is stationary, meaning that the difference is stationary across observed period.  
+
+In the KPSS test, the p-value is lower than 0.01, thus, we reject the null hypothesis that the data is stationary. The data is non-stationary according to KPSS test. Notice that the KPSS test for stationary does not use difference. 
+
+As mentioned above, there is a trend in beersales. For that reason, the results of ADF and KPSS could be contradictory. 
+
+In conclusion, due to the difference in the results from ADF test and KPSS test, it can be inferred that the series is *trend stationary* and not strict stationary. The series can be detrended by differencing. 
+
+
+```{r}
+# Run KPSS test to examine if difference is stationary
+d_beersales <- diff(beersales, lag = 1, diff = 1)
+kpss.test(d_beersales)
+```
+
+## (c) 
+
+Create two dummy variables to test for seasonal patterns in the data. Specifically, create a variable `dJan` that takes the value of 1 in January, and 0 in other months. In addition, create a variable `dDec` that takes the value of 1 in December, and 0 in other months. Estimate a linear regression model (see lm in R) by regressing beer sales on the two dummy variables. This regression provides the ‘seasonal patterns’ with respect to the January and December months. Remove the fitted values of this regression from the original beer sales data to ‘remove seasonality’.
+Hint: Define a variable `lm_seasonal` that is the output of the `lm` regression. Then define `beersalesSeasonAdj` as the difference between `beersales` and `lm_seasonal$fitted.values`
+
+```{r dummy}
+library(zoo)
+# Create dummy variables for January and December
+dJan <- ifelse(months(as.Date(time(beersales))) == 'January', 1, 0)
+dDec <- ifelse(months(as.Date(time(beersales))) == 'December', 1, 0)
+
+# Estimate linear regression model by regressing beer sales on the 
+#two dummy variables
+
+lm_seasonal <- lm(beersales ~ dJan + dDec, data = beersales)
+summary(lm_seasonal)
+  
+# Remove seasonal component
+beersalesSeasonAdj <- beersales - lm_seasonal$fitted.values
+
+```
+
+## (d) 
+
+Plot the seasonally adjusted data in part (c), and the ACF and PACF of these data. Do you think that the January and December dummies removed the seasonal patterns in the data?
+
+```{r}
+# Plot the seasonally adjusted beer sales data
+plot.ts(beersalesSeasonAdj)
+
+# Plot the ACF and PACF of adjusted beer sales data
+par(mfrow=c(1,2))
+acf(beersalesSeasonAdj, lag.max = 100)
+pacf(beersalesSeasonAdj, lag.max = 100)
+
+```
+
+The ACF and PACF plots show that there are significant spikes with high values (close to 1) at specific lags, which suggesting that there are still seasonal pattern in beer sales. High degree of autocorrelation near-adjacent observations which means that this method does not improve in removing autocorrelation effect. Therefore, the January and December dummies do not remove the seasonal patterns in the data.
+
+## (e)
+
+Apply the sine-cosine method for smoothing (de-trending) the data in addition to the January and December dummy variables by using the code below, adjusting the appropriate ‘frequency’. Remove this trend from beer sales, plot the ACF and PACF of the detrended data. Does this method remove correlation patterns from the data?
+
+```{r}
+t <- 1:length(beersales)
+cos.t <- cos(2*pi*t/12)
+sin.t <- sin(2*pi*t/12)
+trend <- lm(beersales ~ t + cos.t + sin.t + dDec + dJan)$fitted.values
+
+#plot the trend data
+plot(x = time(beersales), y = trend, type = 'l')
+
+# Remove trend from beer sales
+detrended_sales <- beersales - trend
+
+# Plot the detrended beer sales data
+plot(x = time(beersales), y = detrended_sales, type = 'l')
+
+# Plot the ACF and PACF of the detrended beer sales data
+par(mfrow=c(1,2))
+acf(detrended_sales, main = "ACF of Detrended Beer Sales", lag.max = 100)
+pacf(detrended_sales, main = "PACF of Detrended Beer Sales", lag.max = 100)
+
+```
+
+First, the plot of detrended_sales seems to be stationary with constant mean variance. Second, comparing to the method of (e), the values of ACF and PACF are lower than those values in the previous plots. The ACF plot has the highest value of around 0.45 and the PACF plot has the highest values of about 0.35. This mean that the sine cosine method can help remove seasonality with the appropriate frequency, in this case, the frequency is 12.
+
+*Test the method for detrending by taking the difference between sales of adjacent months*
+```{r}
+#detrend by differencing
+plot(d_beersales)
+acf(d_beersales, lag.max = 100)
+pacf(d_beersales)
+
+```
+*Remark* Simply taking difference in sales between 2 months does does not help in removing seasonality
+
+## (f)
+
+Apply four ARMA models to apply to the original (not de-trended) beer sales data. Specifically, estimate an ARMA(1,1) model, an AR(12) model, an ARMA(1,1) model with a deterministic trend, and an AR(12) model with a deterministic trend. Define the deterministic trends ‘within a year’ as below, and add time
+as an explanatory variable for the models with a deterministic trend.
+
+```{r ARMA}
+# Define time variable within a year
+time <- rep(1:12, length(beersales)/12)
+
+# ARMA(1,1) model
+arma_11 <- arima(beersales, order = c(1, 0, 1))
+arma_11
+
+# AR(12) model
+ar_12 <- arima(beersales, order = c(12, 0, 0))
+ar_12$coef
+
+# ARMA(1,1) model with deterministic trend
+arma_11_trend <- arima(beersales, order = c(1, 0, 1), xreg = time)
+arma_11_trend$coef
+
+# AR(12) model with deterministic trend
+ar_12_trend <- arima(beersales, order = c(12, 0, 0), xreg = time)
+ar_12_trend$coef
+```
+
+## (g)
+
+The next purpose is to choose the most appropriate models in part (f) for the data. Calculate the Bayesian Information Criteria (BIC) for the four models in part (f). Based on these criteria, which model performs best, and which models seem to ‘overfit’ the data? In addition, compare the Root Mean Square Error (RMSE) and Mean Absolute Error (MAE) of the alternative models. Which model performs best according to these criteria?
+
+```{r}
+# Calculate BIC for each model
+bic_arma_11 <- BIC(arma_11)
+bic_ar_12 <- BIC(ar_12)
+bic_arma_11_trend <- BIC(arma_11_trend)
+bic_ar_12_trend <- BIC(ar_12_trend)
+
+#Split the data into training and testing
+training <- beersales[1:100]
+testing <- beersales[101:150]
+
+# Calculate RMSE for each model
+rmse_arma_11 <- sqrt(mean((residuals(arma_11))^2))
+rmse_ar_12 <- sqrt(mean((residuals(ar_12))^2))
+rmse_arma_11_trend <- sqrt(mean((residuals(arma_11_trend))^2))
+rmse_ar_12_trend <- sqrt(mean((residuals(ar_12_trend))^2))
+
+# Calculate MAE for each model
+mae_arma_11 <- mean(abs(residuals(arma_11)))
+mae_ar_12 <- mean(abs(residuals(ar_12)))
+mae_arma_11_trend <- mean(abs(residuals(arma_11_trend)))
+mae_ar_12_trend <- mean(abs(residuals(ar_12_trend)))
+
+# Create a data frame to store the results
+model_comparison <- data.frame(Model = c("ARMA(1,1)", "AR(12)", "ARMA(1,1) with trend", "AR(12) with trend"),
+                               BIC = c(bic_arma_11, bic_ar_12, bic_arma_11_trend, bic_ar_12_trend),
+                               RMSE = c(rmse_arma_11, rmse_ar_12, rmse_arma_11_trend, rmse_ar_12_trend),
+                               MAE = c(mae_arma_11, mae_ar_12, mae_arma_11_trend, mae_ar_12_trend))
+
+# Print the model comparison
+print(model_comparison)
+
+```
+
+From the table, we can see that both AR(12) and AR(12) with trend models have lower RMSE and MAE values, comparing to ARMA(1,1) and ARMA(1,1) with trend. It means that there are less errors in prediction. Since the BIC penalizes models based on their number of parameters, the lower BIC is, the less complex the models are. BIC of AR(12) without trend is slightly lower than BIC of AR(12) with trend, thus, introducing trend could make AR(12) more complex and overfitted. We choose AR(12) without trend as 'best performing model'
+
+## (h)
+
+Take the ‘best performing model’ according to the BIC in part (g). Test the significance of the model coefficients using t-tests. Comment on these tests of significance. Inspect the residuals of this model. Do you think that the residuals have (remaining) autocorrelation?
+
+```{r t-test}
+# Extract coefficients and standard errors
+coefficients <- coef(ar_12)
+standard_errors <- sqrt(diag(vcov(ar_12)))
+
+# Calculate t-statistics
+t_statistics <- coefficients / standard_errors
+
+# Calculate critical values
+T <- length(beersales)
+n <- length(coefficients) + 2
+t_critical <- qt(p = c(0.05, 0.95), df = T - n)
+
+# Test significance of coefficients
+significance <- abs(t_statistics) > t_critical[2]
+
+# Create a data frame to store the results
+coefficients_test <- data.frame(Coefficient = names(coefficients),
+                                Estimate = coefficients,
+                                Std_Error = standard_errors,
+                                T_Statistic = t_statistics,
+                                T_Critical = t_critical[2],
+                                Significant = significance)
+
+# Print the test results
+print(coefficients_test)
+
+# Plot the residuals of the AR(12) model
+plot(residuals(ar_12), type = "l", ylab = "Residuals", main = "Residuals of AR(12) Model")
+abline(h = 0, col = "red", lty = 2)
+
+# Plot the ACF of residuals of AR(12) model
+acf(residuals(ar_12))
+
+```
+
+The ACF plot of residuals shows that there is no large spikes, meaning that the residuals do not have (remaining) autocorrelation.
+
+
+
+
+
