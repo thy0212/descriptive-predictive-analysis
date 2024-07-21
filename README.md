@@ -1,1 +1,3 @@
 # Descriptive and Predictive Analysis
+These are author's solutions for the excercise of the course Descriptive and Predictive Analytics taught at Maastricht University. This course mainly discussed Time series models, discrete choice models and panel data models.
+[tutorial 1](https://github.com/thy0212/descriptive-predictive-analysis/tree/main/tutorial%201) is about AR and ARMA models and related problems when using these model to model time-series data. In tutorial 1, monthly beer sales provided in R package TSA is used to illustrate the usage of ACF and PACF figures, ADF and KPSS tests, how to de-trend time-series data, and apply ARMA models to de-trened and not de-trended beer sales data.
