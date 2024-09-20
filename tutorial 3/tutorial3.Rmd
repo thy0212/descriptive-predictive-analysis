@@ -1,6 +1,6 @@
 ---
 title: "Tutorial 3"
-author: "Thy Nguyen (i6209084) - MinhPham (i6361108)"
+author: "Thy Nguyen (i6209084)"
 date: "`r Sys.Date()`"
 output: pdf_document
 ---
