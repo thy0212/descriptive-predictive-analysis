@@ -1,6 +1,6 @@
 ---
 title: "Tutorial 1"
-author: "Thy Nguyen - Minh Pham"
+author: "Thy Nguyen"
 date: "`r Sys.Date()`"
 output:  word_document
 ---
