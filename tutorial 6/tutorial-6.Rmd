@@ -1,6 +1,6 @@
 ---
 title: "Assignment-6"
-author: "Thy Nguyen - Minh Pham"
+author: "Thy Nguyen"
 date: "`r Sys.Date()`"
 output: pdf_document
 ---
